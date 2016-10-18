@@ -18,6 +18,7 @@
   "main": "index.js",
   "dependencies": {
     "webpack-dev-middleware": "^1.8.4",
+    "eventsource-polyfill": "^0.9.6",
     "webpack-hot-middleware": "^2.12.2"
   },
   "peerDependencies": {
