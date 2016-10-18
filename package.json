@@ -1,7 +1,7 @@
 {
   "name": "koa-hot-dev-webpack",
   "description": "webpack-dev-middleware and webpack-hot-middleware with good defaults for fast setup of koa dev servers",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "homepage": "https://github.com/paulpflug/",
   "author": {
     "name": "Paul Pflugradt",
