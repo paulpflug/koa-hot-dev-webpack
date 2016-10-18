@@ -1,0 +1,44 @@
+{
+  "name": "koa-hot-dev-webpack",
+  "description": "webpack-dev-middleware and webpack-hot-middleware with good defaults for fast setup of koa dev servers",
+  "version": "0.0.0",
+  "homepage": "https://github.com/paulpflug/",
+  "author": {
+    "name": "Paul Pflugradt",
+    "email": "paul.pflugradt@gmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/paulpflug/koa-hot-dev-webpack"
+  },
+  "engines": {
+    "node": "*"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "webpack-dev-middleware": "^1.8.4",
+    "webpack-hot-middleware": "^2.12.2"
+  },
+  "peerDependencies": {
+    "webpack": "^1.13.2"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.11.1",
+    "webpack": "^1.13.2"
+  },
+  "keywords": [
+    "koa",
+    "dev",
+    "hot",
+    "webpack"
+  ],
+  "readmeFilename": "README.md",
+  "scripts": {
+    "build": "coffee --no-header --compile --output ./ src/*.coffee",
+    "test": "",
+    "preversion": "npm test",
+    "version": "npm run build && git add .",
+    "postversion": "git push && git push --tags && npm publish"
+  }
+}
