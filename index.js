@@ -8,12 +8,11 @@
   hotMiddleware = require("webpack-hot-middleware");
 
   module.exports = function(webconf, options) {
-    var compiler, hotReloadPath, key, ref, val, wdm;
+    var compiler, hotReloadPath, key, ref, val, wdm, whm;
     if (webconf.plugins == null) {
       webconf.plugins = [];
     }
     webconf.plugins.push(new webpack.NoErrorsPlugin());
-    webconf.plugins.push(new webpack.optimize.OccurenceOrderPlugin());
     webconf.plugins.push(new webpack.HotModuleReplacementPlugin());
     if (webconf.entry == null) {
       webconf.entry = {};
@@ -25,7 +24,7 @@
       if (Array.isArray(val)) {
         val.unshift(hotReloadPath);
       } else {
-        val = [hotReloadPath, val];
+        webconf.entry[key] = [hotReloadPath, val];
       }
     }
     if (options == null) {
@@ -47,6 +46,15 @@
     }
     compiler = webpack(webconf);
     wdm = devMiddleware(compiler, options);
+    whm = hotMiddleware(compiler);
+    compiler.plugin('compilation', function(compilation) {
+      return compilation.plugin('html-webpack-plugin-after-emit', function(data, cb) {
+        whm.publish({
+          action: 'reload'
+        });
+        return cb();
+      });
+    });
     return function*(next) {
       var ctx, ended;
       ctx = this;
@@ -64,7 +72,7 @@
         });
       });
       if (!ended) {
-        yield hotMiddleware(compiler).bind(null, this.req, this.res);
+        yield whm.bind(null, ctx.req, ctx.res);
         return (yield next);
       }
     };

@@ -26,7 +26,6 @@ koa.use(koaHotDevWebpack(webpackConfig,middlewareOptions))
 It will add the following plugins:
 ```js
 new webpack.NoErrorsPlugin()
-new webpack.optimize.OccurenceOrderPlugin()
 new webpack.HotModuleReplacementPlugin()
 ```
 
@@ -35,7 +34,7 @@ and inject `webpack-hot-middleware/client` to all entries
 middlewareOptions defaults are
 ```js
 {
-  publicPath: webpackConfig.output.publicPath && "/"
+  publicPath: webpackConfig.output.publicPath || "/"
   noInfo: true
   stats: { colors:true }
 }
