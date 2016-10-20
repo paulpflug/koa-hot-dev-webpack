@@ -2,6 +2,7 @@ webpack = require "webpack"
 devMiddleware = require('webpack-dev-middleware')
 hotMiddleware = require("webpack-hot-middleware")
 whm = null
+compiler = null
 module.exports = (webconf,options) ->
   webconf.plugins ?= []
   webconf.plugins.push new webpack.optimize.OccurenceOrderPlugin()
@@ -42,3 +43,5 @@ module.exports = (webconf,options) ->
 
 module.exports.reload = ->
   whm?.publish action: 'reload'
+
+module.exports.close = -> compiler?.close?()

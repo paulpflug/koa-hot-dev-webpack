@@ -1,5 +1,5 @@
 (function() {
-  var devMiddleware, hotMiddleware, webpack, whm;
+  var compiler, devMiddleware, hotMiddleware, webpack, whm;
 
   webpack = require("webpack");
 
@@ -9,8 +9,10 @@
 
   whm = null;
 
+  compiler = null;
+
   module.exports = function(webconf, options) {
-    var compiler, hotReloadPath, key, ref, val, wdm;
+    var hotReloadPath, key, ref, val, wdm;
     if (webconf.plugins == null) {
       webconf.plugins = [];
     }
@@ -82,6 +84,10 @@
     return whm != null ? whm.publish({
       action: 'reload'
     }) : void 0;
+  };
+
+  module.exports.close = function() {
+    return compiler != null ? typeof compiler.close === "function" ? compiler.close() : void 0 : void 0;
   };
 
 }).call(this);

@@ -41,9 +41,13 @@ middlewareOptions defaults are
 }
 ```
 
-### manual reload
+##### manual reload
 ```js
 koaHotDevWebpack.reload() // will only work for the last instance created
+```
+##### close webpack
+```js
+koaHotDevWebpack.close() // will only work for the last instance created
 ```
 ## License
 Copyright (c) 2016 Paul Pflugradt
