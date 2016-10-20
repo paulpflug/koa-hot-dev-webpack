@@ -40,6 +40,11 @@ middlewareOptions defaults are
   stats: { colors:true }
 }
 ```
+
+### manual reload
+```js
+koaHotDevWebpack.reload() // will only work for the last instance created
+```
 ## License
 Copyright (c) 2016 Paul Pflugradt
 Licensed under the MIT license.

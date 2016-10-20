@@ -1,5 +1,5 @@
 (function() {
-  var devMiddleware, hotMiddleware, webpack;
+  var devMiddleware, hotMiddleware, webpack, whm;
 
   webpack = require("webpack");
 
@@ -7,8 +7,10 @@
 
   hotMiddleware = require("webpack-hot-middleware");
 
+  whm = null;
+
   module.exports = function(webconf, options) {
-    var compiler, hotReloadPath, key, ref, val, wdm, whm;
+    var compiler, hotReloadPath, key, ref, val, wdm;
     if (webconf.plugins == null) {
       webconf.plugins = [];
     }
@@ -74,6 +76,12 @@
         return (yield next);
       }
     };
+  };
+
+  module.exports.reload = function() {
+    return whm != null ? whm.publish({
+      action: 'reload'
+    }) : void 0;
   };
 
 }).call(this);
