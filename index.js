@@ -12,6 +12,7 @@
     if (webconf.plugins == null) {
       webconf.plugins = [];
     }
+    webconf.plugins.push(new webpack.optimize.OccurenceOrderPlugin());
     webconf.plugins.push(new webpack.NoErrorsPlugin());
     webconf.plugins.push(new webpack.HotModuleReplacementPlugin());
     if (webconf.entry == null) {
@@ -31,10 +32,7 @@
       options = {};
     }
     if (options.publicPath == null) {
-      options.publicPath = webconf.output.publicPath;
-    }
-    if (options.publicPath == null) {
-      options.publicPath = "/";
+      options.publicPath = webconf.output.publicPath || "/";
     }
     if (options.noInfo == null) {
       options.noInfo = true;

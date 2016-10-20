@@ -4,6 +4,7 @@ hotMiddleware = require("webpack-hot-middleware")
 
 module.exports = (webconf,options) ->
   webconf.plugins ?= []
+  webconf.plugins.push new webpack.optimize.OccurenceOrderPlugin()
   webconf.plugins.push new webpack.NoErrorsPlugin()
   webconf.plugins.push new webpack.HotModuleReplacementPlugin()
   webconf.entry ?= {}
@@ -14,8 +15,7 @@ module.exports = (webconf,options) ->
     else
       webconf.entry[key] = [hotReloadPath,val]
   options ?= {}
-  options.publicPath ?= webconf.output.publicPath
-  options.publicPath ?= "/"
+  options.publicPath ?= webconf.output.publicPath or "/"
   options.noInfo ?= true
   options.stats ?= colors:true
   compiler = webpack(webconf)
@@ -29,13 +29,13 @@ module.exports = (webconf,options) ->
     ctx = this
     ended = yield (done) ->
       wdm ctx.req, {
-          end: (content) ->
-            ctx.body = content
-            done(null,true)
-          setHeader: ->
-            ctx.set.apply(ctx, arguments)
-        }, ->
-          done(null,false)
+        end: (content) ->
+          ctx.body = content
+          done(null,true)
+        setHeader: ->
+          ctx.set.apply(ctx, arguments)
+      }, ->
+        done(null,false)
     unless ended
       yield whm.bind(null,ctx.req,ctx.res)
       yield next

@@ -25,6 +25,7 @@ koa.use(koaHotDevWebpack(webpackConfig,middlewareOptions))
 
 It will add the following plugins:
 ```js
+new webpack.optimize.OccurenceOrderPlugin()
 new webpack.NoErrorsPlugin()
 new webpack.HotModuleReplacementPlugin()
 ```
