@@ -21,16 +21,21 @@ npm install --save koa-hot-dev-webpack webpack
 ```js
 koaHotDevWebpack = require("koa-hot-dev-webpack")
 koa.use(koaHotDevWebpack(webpackConfig,middlewareOptions))
+// webpackConfig is mandatory
 ```
 
 It will add the following plugins:
 ```js
+// for Webpack 1
 new webpack.optimize.OccurenceOrderPlugin()
 new webpack.NoErrorsPlugin()
 new webpack.HotModuleReplacementPlugin()
+// for Webpack 2
+new webpack.NoEmitOnErrorsPlugin()
+new webpack.HotModuleReplacementPlugin()
 ```
 
-and inject `webpack-hot-middleware/client` to all entries
+and inject `webpack-hot-middleware/client` to all entry points
 
 middlewareOptions defaults are
 ```js
@@ -41,14 +46,14 @@ middlewareOptions defaults are
 }
 ```
 
-##### manual reload
+### API
+All only work for the last instance created!
 ```js
-koaHotDevWebpack.reload() // will only work for the last instance created
+koaHotDevWebpack.invalidate() // to invalidate the bundle
+koaHotDevWebpack.reload() // to reload client side
+koaHotDevWebpack.close() // to close webpack
 ```
-##### close webpack
-```js
-koaHotDevWebpack.close() // will only work for the last instance created
-```
+
 ## License
 Copyright (c) 2016 Paul Pflugradt
 Licensed under the MIT license.

@@ -16,8 +16,12 @@
     if (webconf.plugins == null) {
       webconf.plugins = [];
     }
-    webconf.plugins.push(new webpack.optimize.OccurenceOrderPlugin());
-    webconf.plugins.push(new webpack.NoErrorsPlugin());
+    if (webpack.optimize.OccurenceOrderPlugin != null) {
+      webconf.plugins.push(new webpack.optimize.OccurenceOrderPlugin());
+      webconf.plugins.push(new webpack.NoErrorsPlugin());
+    } else {
+      webconf.plugins.push(new webpack.NoEmitOnErrorsPlugin());
+    }
     webconf.plugins.push(new webpack.HotModuleReplacementPlugin());
     if (webconf.entry == null) {
       webconf.entry = {};
@@ -84,6 +88,10 @@
     return whm != null ? whm.publish({
       action: 'reload'
     }) : void 0;
+  };
+
+  module.exports.invalidate = function() {
+    return compiler != null ? typeof compiler.invalidate === "function" ? compiler.invalidate() : void 0 : void 0;
   };
 
   module.exports.close = function() {

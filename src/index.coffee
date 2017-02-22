@@ -1,12 +1,17 @@
+# out: ../index.js
 webpack = require "webpack"
 devMiddleware = require('webpack-dev-middleware')
 hotMiddleware = require("webpack-hot-middleware")
 whm = null
 compiler = null
-module.exports = (webconf,options) ->
+module.exports = (webconf, options) ->
   webconf.plugins ?= []
-  webconf.plugins.push new webpack.optimize.OccurenceOrderPlugin()
-  webconf.plugins.push new webpack.NoErrorsPlugin()
+  if webpack.optimize.OccurenceOrderPlugin?
+    webconf.plugins.push new webpack.optimize.OccurenceOrderPlugin()
+    webconf.plugins.push new webpack.NoErrorsPlugin()
+  else
+    #webconf.plugins.push new webpack.optimize.OccurrenceOrderPlugin()
+    webconf.plugins.push new webpack.NoEmitOnErrorsPlugin()
   webconf.plugins.push new webpack.HotModuleReplacementPlugin()
   webconf.entry ?= {}
   hotReloadPath = require.resolve('./hot-reload')
@@ -43,5 +48,7 @@ module.exports = (webconf,options) ->
 
 module.exports.reload = ->
   whm?.publish action: 'reload'
+
+module.exports.invalidate = -> compiler?.invalidate?()
 
 module.exports.close = -> compiler?.close?()
