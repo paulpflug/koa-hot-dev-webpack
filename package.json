@@ -39,7 +39,7 @@
   "scripts": {
     "build": "coffee --no-header --compile --output ./ src/*.coffee",
     "test": "",
-    "preversion": "npm test",
+    "preversion": "npm run test",
     "version": "npm run build && git add .",
     "postversion": "git push && git push --tags && npm publish"
   }
