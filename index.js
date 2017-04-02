@@ -12,7 +12,7 @@
   compiler = null;
 
   module.exports = function(webconf, options) {
-    var hotReloadPath, key, ref, val, wdm;
+    var entry, hotReloadPath, key, ref, val, wdm;
     if (webconf.plugins == null) {
       webconf.plugins = [];
     }
@@ -23,17 +23,25 @@
       webconf.plugins.push(new webpack.NoEmitOnErrorsPlugin());
     }
     webconf.plugins.push(new webpack.HotModuleReplacementPlugin());
-    if (webconf.entry == null) {
-      webconf.entry = {};
-    }
+    entry = webconf.entry != null ? webconf.entry : webconf.entry = {};
     hotReloadPath = require.resolve('./hot-reload');
-    ref = webconf.entry;
-    for (key in ref) {
-      val = ref[key];
-      if (Array.isArray(val)) {
-        val.unshift(hotReloadPath);
-      } else {
-        webconf.entry[key] = [hotReloadPath, val];
+    if (typeof entry === "string" || entry instanceof String) {
+      webconf.entry = [hotReloadPath, entry];
+    } else if (Array.isArray(entry)) {
+      if (!(entry.indexOf(hotReloadPath) > -1)) {
+        entry.unshift(hotReloadPath);
+      }
+    } else {
+      ref = webconf.entry;
+      for (key in ref) {
+        val = ref[key];
+        if (Array.isArray(val)) {
+          if (!(entry.indexOf(hotReloadPath) > -1)) {
+            val.unshift(hotReloadPath);
+          }
+        } else {
+          webconf.entry[key] = [hotReloadPath, val];
+        }
       }
     }
     if (options == null) {
