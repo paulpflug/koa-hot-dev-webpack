@@ -13,13 +13,18 @@ module.exports = (webconf, options) ->
     #webconf.plugins.push new webpack.optimize.OccurrenceOrderPlugin()
     webconf.plugins.push new webpack.NoEmitOnErrorsPlugin()
   webconf.plugins.push new webpack.HotModuleReplacementPlugin()
-  webconf.entry ?= {}
+  entry = webconf.entry ?= {}
   hotReloadPath = require.resolve('./hot-reload')
-  for key,val of webconf.entry
-    if Array.isArray(val)
-      val.unshift(hotReloadPath)
-    else
-      webconf.entry[key] = [hotReloadPath,val]
+  if typeof entry == "string" or entry instanceof String
+    webconf.entry = [hotReloadPath, entry]
+  else if Array.isArray(entry)
+    entry.unshift(hotReloadPath) unless entry.indexOf(hotReloadPath) > -1
+  else
+    for key,val of webconf.entry
+      if Array.isArray(val)
+        val.unshift(hotReloadPath) unless entry.indexOf(hotReloadPath) > -1
+      else
+        webconf.entry[key] = [hotReloadPath,val]
   options ?= {}
   options.publicPath ?= webconf.output.publicPath or "/"
   options.noInfo ?= true
