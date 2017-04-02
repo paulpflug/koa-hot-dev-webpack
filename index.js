@@ -1,5 +1,5 @@
 (function() {
-  var compiler, devMiddleware, hotMiddleware, webpack, whm;
+  var PassThrough, compiler, devMiddleware, hotMiddleware, wdm, webpack, whm;
 
   webpack = require("webpack");
 
@@ -7,12 +7,16 @@
 
   hotMiddleware = require("webpack-hot-middleware");
 
+  PassThrough = require("stream").PassThrough;
+
   whm = null;
+
+  wdm = null;
 
   compiler = null;
 
-  module.exports = function(webconf, options) {
-    var entry, hotReloadPath, key, ref, val, wdm;
+  module.exports = (webconf, options) => {
+    var entry, hotReloadPath, key, ref, val;
     if (webconf.plugins == null) {
       webconf.plugins = [];
     }
@@ -36,7 +40,7 @@
       for (key in ref) {
         val = ref[key];
         if (Array.isArray(val)) {
-          if (!(entry.indexOf(hotReloadPath) > -1)) {
+          if (!(val.indexOf(hotReloadPath) > -1)) {
             val.unshift(hotReloadPath);
           }
         } else {
@@ -61,49 +65,56 @@
     compiler = webpack(webconf);
     wdm = devMiddleware(compiler, options);
     whm = hotMiddleware(compiler);
-    compiler.plugin('compilation', function(compilation) {
-      return compilation.plugin('html-webpack-plugin-after-emit', function(data, cb) {
+    compiler.plugin('compilation', (compilation) => {
+      return compilation.plugin('html-webpack-plugin-after-emit', (data, cb) => {
         whm.publish({
           action: 'reload'
         });
         return cb();
       });
     });
-    return function*(next) {
-      var ctx, ended;
-      ctx = this;
-      ended = (yield function(done) {
-        return wdm(ctx.req, {
-          end: function(content) {
-            ctx.body = content;
-            return done(null, true);
-          },
-          setHeader: function() {
-            return ctx.set.apply(ctx, arguments);
-          }
-        }, function() {
-          return done(null, false);
-        });
+    return async function(ctx, next) {
+      await new Promise((resolve, reject) => {
+        return wdm.waitUntilValid(resolve);
       });
-      if (!ended) {
-        yield whm.bind(null, ctx.req, ctx.res);
-        return (yield next);
-      }
+      return (await wdm(ctx.req, {
+        end: (content) => {
+          return ctx.body = content;
+        },
+        setHeader: ctx.set.bind(ctx),
+        locals: ctx.state
+      }, () => {
+        var stream;
+        stream = new PassThrough();
+        return whm(ctx.req, {
+          write: stream.write.bind(stream),
+          writeHead: (status, headers) => {
+            ctx.body = stream;
+            ctx.status = status;
+            return ctx.set(headers);
+          }
+        }, next);
+      }));
     };
   };
 
-  module.exports.reload = function() {
+  module.exports.reload = () => {
     return whm != null ? whm.publish({
       action: 'reload'
     }) : void 0;
   };
 
-  module.exports.invalidate = function() {
-    return compiler != null ? typeof compiler.invalidate === "function" ? compiler.invalidate() : void 0 : void 0;
+  module.exports.invalidate = () => {
+    return wdm != null ? typeof wdm.invalidate === "function" ? wdm.invalidate() : void 0 : void 0;
   };
 
-  module.exports.close = function() {
-    return compiler != null ? typeof compiler.close === "function" ? compiler.close() : void 0 : void 0;
+  module.exports.close = () => {
+    if (compiler != null) {
+      if (typeof compiler.close === "function") {
+        compiler.close();
+      }
+    }
+    return wdm != null ? typeof wdm.close === "function" ? wdm.close() : void 0 : void 0;
   };
 
 }).call(this);

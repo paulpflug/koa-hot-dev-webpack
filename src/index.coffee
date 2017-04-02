@@ -2,9 +2,11 @@
 webpack = require "webpack"
 devMiddleware = require('webpack-dev-middleware')
 hotMiddleware = require("webpack-hot-middleware")
+PassThrough = require("stream").PassThrough
 whm = null
+wdm = null
 compiler = null
-module.exports = (webconf, options) ->
+module.exports = (webconf, options) =>
   webconf.plugins ?= []
   if webpack.optimize.OccurenceOrderPlugin?
     webconf.plugins.push new webpack.optimize.OccurenceOrderPlugin()
@@ -22,7 +24,7 @@ module.exports = (webconf, options) ->
   else
     for key,val of webconf.entry
       if Array.isArray(val)
-        val.unshift(hotReloadPath) unless entry.indexOf(hotReloadPath) > -1
+        val.unshift(hotReloadPath) unless val.indexOf(hotReloadPath) > -1
       else
         webconf.entry[key] = [hotReloadPath,val]
   options ?= {}
@@ -32,28 +34,34 @@ module.exports = (webconf, options) ->
   compiler = webpack(webconf)
   wdm = devMiddleware(compiler,options)
   whm = hotMiddleware(compiler)
-  compiler.plugin 'compilation', (compilation) ->
-    compilation.plugin 'html-webpack-plugin-after-emit', (data, cb) ->
+  compiler.plugin 'compilation', (compilation) =>
+    compilation.plugin 'html-webpack-plugin-after-emit', (data, cb) =>
       whm.publish action: 'reload'
       cb()
-  return (next) ->
-    ctx = this
-    ended = yield (done) ->
-      wdm ctx.req, {
-        end: (content) ->
-          ctx.body = content
-          done(null,true)
-        setHeader: ->
-          ctx.set.apply(ctx, arguments)
-      }, ->
-        done(null,false)
-    unless ended
-      yield whm.bind(null,ctx.req,ctx.res)
-      yield next
+  return (ctx, next) ->
+    await new Promise (resolve, reject) =>
+      wdm.waitUntilValid resolve
+      
+    await wdm ctx.req, {
+        end: (content) => ctx.body = content
+        setHeader: ctx.set.bind(ctx)
+        locals: ctx.state
+      }, =>
+        stream = new PassThrough()
+        whm ctx.req,{
+          write: stream.write.bind(stream)
+          writeHead: (status, headers) =>
+            ctx.body = stream
+            ctx.status = status
+            ctx.set(headers)
+        },next
 
-module.exports.reload = ->
+module.exports.reload = =>
   whm?.publish action: 'reload'
 
-module.exports.invalidate = -> compiler?.invalidate?()
+module.exports.invalidate = => 
+  wdm?.invalidate?()
 
-module.exports.close = -> compiler?.close?()
+module.exports.close = => 
+  compiler?.close?()
+  wdm?.close?()

@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "coffee-script": "^1.12.4",
+    "coffeescript": "^2.0.0-alpha1",
     "webpack": "^2.2.1"
   },
   "keywords": [
