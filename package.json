@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "coffeescript": "^2.0.0-alpha1",
-    "webpack": "^2.2.1"
+    "webpack": "^2.3.3"
   },
   "keywords": [
     "koa",

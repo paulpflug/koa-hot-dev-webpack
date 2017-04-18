@@ -73,28 +73,35 @@
         return cb();
       });
     });
-    return async function(ctx, next) {
-      await new Promise((resolve, reject) => {
-        return wdm.waitUntilValid(resolve);
+    return (ctx, next) => {
+      return new Promise((resolve) => {
+        var prevStatus;
+        prevStatus = ctx.res.statusCode;
+        ctx.res.statusCode = 200;
+        return wdm(ctx.req, {
+          end: (content) => {
+            ctx.body = content;
+            return resolve();
+          },
+          setHeader: ctx.set.bind(ctx),
+          locals: ctx.state
+        }, () => {
+          var stream;
+          ctx.res.statusCode = prevStatus;
+          stream = new PassThrough();
+          return whm(ctx.req, {
+            write: stream.write.bind(stream),
+            writeHead: (status, headers) => {
+              ctx.body = stream;
+              ctx.status = status;
+              return ctx.set(headers);
+            }
+          }, () => {
+            resolve();
+            return next();
+          });
+        });
       });
-      return (await wdm(ctx.req, {
-        end: (content) => {
-          return ctx.body = content;
-        },
-        setHeader: ctx.set.bind(ctx),
-        locals: ctx.state
-      }, () => {
-        var stream;
-        stream = new PassThrough();
-        return whm(ctx.req, {
-          write: stream.write.bind(stream),
-          writeHead: (status, headers) => {
-            ctx.body = stream;
-            ctx.status = status;
-            return ctx.set(headers);
-          }
-        }, next);
-      }));
     };
   };
 

@@ -38,15 +38,17 @@ module.exports = (webconf, options) =>
     compilation.plugin 'html-webpack-plugin-after-emit', (data, cb) =>
       whm.publish action: 'reload'
       cb()
-  return (ctx, next) ->
-    await new Promise (resolve, reject) =>
-      wdm.waitUntilValid resolve
-      
-    await wdm ctx.req, {
-        end: (content) => ctx.body = content
+  return (ctx, next) => new Promise (resolve) =>
+    prevStatus = ctx.res.statusCode
+    ctx.res.statusCode = 200
+    wdm ctx.req, {
+        end: (content) => 
+          ctx.body = content
+          resolve()
         setHeader: ctx.set.bind(ctx)
         locals: ctx.state
       }, =>
+        ctx.res.statusCode = prevStatus
         stream = new PassThrough()
         whm ctx.req,{
           write: stream.write.bind(stream)
@@ -54,7 +56,7 @@ module.exports = (webconf, options) =>
             ctx.body = stream
             ctx.status = status
             ctx.set(headers)
-        },next
+        }, => resolve();next()
 
 module.exports.reload = =>
   whm?.publish action: 'reload'
