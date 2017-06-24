@@ -62,14 +62,18 @@
         colors: true
       };
     }
+    if (webconf.watchOptions != null) {
+      if (options.watchOptions == null) {
+        options.watchOptions = webconf.watchOptions;
+      }
+    }
     compiler = webpack(webconf);
     wdm = devMiddleware(compiler, options);
-    whm = hotMiddleware(compiler);
+    whm = hotMiddleware(compiler, {
+      heartbeat: 4000
+    });
     compiler.plugin('compilation', (compilation) => {
       return compilation.plugin('html-webpack-plugin-after-emit', (data, cb) => {
-        whm.publish({
-          action: 'reload'
-        });
         return cb();
       });
     });
@@ -86,20 +90,22 @@
           setHeader: ctx.set.bind(ctx),
           locals: ctx.state
         }, () => {
-          var stream;
+          var result, stream;
           ctx.res.statusCode = prevStatus;
           stream = new PassThrough();
-          return whm(ctx.req, {
+          result = whm(ctx.req, {
             write: stream.write.bind(stream),
             writeHead: (status, headers) => {
               ctx.body = stream;
               ctx.status = status;
               return ctx.set(headers);
             }
-          }, () => {
-            resolve();
-            return next();
+          }, function() {
+            return resolve(next);
           });
+          if (!result) {
+            return resolve();
+          }
         });
       });
     };

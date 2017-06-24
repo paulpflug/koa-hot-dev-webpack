@@ -27,16 +27,19 @@ module.exports = (webconf, options) =>
         val.unshift(hotReloadPath) unless val.indexOf(hotReloadPath) > -1
       else
         webconf.entry[key] = [hotReloadPath,val]
+  
   options ?= {}
   options.publicPath ?= webconf.output.publicPath or "/"
   options.noInfo ?= true
   options.stats ?= colors:true
+  if webconf.watchOptions?
+    options.watchOptions ?= webconf.watchOptions
   compiler = webpack(webconf)
   wdm = devMiddleware(compiler,options)
-  whm = hotMiddleware(compiler)
+  whm = hotMiddleware(compiler, heartbeat: 4000)
   compiler.plugin 'compilation', (compilation) =>
     compilation.plugin 'html-webpack-plugin-after-emit', (data, cb) =>
-      whm.publish action: 'reload'
+      #whm.publish action: 'reload'
       cb()
   return (ctx, next) => new Promise (resolve) =>
     prevStatus = ctx.res.statusCode
@@ -50,13 +53,15 @@ module.exports = (webconf, options) =>
       }, =>
         ctx.res.statusCode = prevStatus
         stream = new PassThrough()
-        whm ctx.req,{
+        result = whm ctx.req,{
           write: stream.write.bind(stream)
           writeHead: (status, headers) =>
             ctx.body = stream
             ctx.status = status
             ctx.set(headers)
-        }, => resolve();next()
+        }, -> resolve(next)
+        unless result
+          resolve()
 
 module.exports.reload = =>
   whm?.publish action: 'reload'
