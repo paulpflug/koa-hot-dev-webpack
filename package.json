@@ -20,14 +20,19 @@
     "hot-reload.js",
     "index.js"
   ],
+  "peerDependencies": {
+    "webpack": "^3.0.0"
+  },
   "dependencies": {
-    "webpack-dev-middleware": "^1.11.0",
     "eventsource-polyfill": "^0.9.6",
-    "webpack-hot-middleware": "^2.18.0"
+    "webpack-dev-middleware": "^1.11.0",
+    "webpack-hot-middleware": "^2.18.2"
   },
   "devDependencies": {
-    "coffeescript": "^2.0.0-alpha1",
-    "webpack": "^3.0.0"
+    "coffee-cli": "^0.2.1",
+    "coffeescript": "^2.0.0-beta3",
+    "script-runner": "^0.1.7",
+    "webpack": "^3.2.0"
   },
   "keywords": [
     "koa",
@@ -37,7 +42,9 @@
   ],
   "readmeFilename": "README.md",
   "scripts": {
-    "build": "coffee --no-header --compile --output ./ src/*.coffee",
+    "build": "run-npm build:*",
+    "build:server": "coffee-cli --next --bare --no-header --compile --output . src/index.coffee",
+    "build:client": "coffee-cli --no-header --compile --output . src/hot-reload.coffee",
     "test": "",
     "preversion": "npm run test",
     "version": "npm run build && git add .",
