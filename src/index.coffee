@@ -47,7 +47,7 @@ module.exports = (webconf, options) =>
     wdm ctx.req, {
         end: (content) => 
           ctx.body = content
-          resolve()
+          resolve(next())
         setHeader: ctx.set.bind(ctx)
         locals: ctx.state
       }, =>
@@ -59,9 +59,10 @@ module.exports = (webconf, options) =>
             ctx.body = stream
             ctx.status = status
             ctx.set(headers)
-        }, -> resolve(next)
-        unless result
-          resolve()
+        }, -> 
+          resolve(next())
+          return true
+        resolve(next()) unless result
 
 module.exports.reload = =>
   whm?.publish action: 'reload'
